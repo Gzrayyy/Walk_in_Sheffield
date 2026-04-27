@@ -1,4 +1,4 @@
-const streetViews = [
+const streetViewsP3 = [
   {
     "id": "7",
     "images": [
