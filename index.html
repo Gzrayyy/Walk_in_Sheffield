@@ -102,7 +102,8 @@
                 },
                 comment: '' // 确保添加了这一行
             }, 
-            votes: [], votes_p3: [] 
+            votes: [], votes_p3: [],
+            startedAt: new Date().toISOString()
         };
 
         let surveyPool = [];   
@@ -605,6 +606,7 @@ function proceedFromConsent() {
         function saveComment() {
             const box = document.getElementById('comment-box');
             results.user.comment = box ? box.value : '';
+            results.completedAt = new Date().toISOString();
             currentIdx = 3000; // 设置一个大的索引代表结束
             updateUI();
         }
