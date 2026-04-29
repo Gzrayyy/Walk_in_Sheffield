@@ -215,11 +215,39 @@
                         <p class="text-2xl text-slate-500 italic">University of Sheffield — Participant Information</p>
                     </div>
 
-                    <!-- 研究简介 -->
-                    <section class="bg-blue-50 p-8 rounded-[40px] border-2 border-blue-100 space-y-4">
-                        <h2 class="text-3xl font-extrabold text-blue-900">📋 About This Study</h2>
-                        <p class="text-2xl text-slate-700 leading-relaxed">This study aims to understand whether existing walkability models reflect older adults' actual walking preferences. You will be shown street images and asked to choose your most and least preferred locations. Your responses will help improve walkability design in Sheffield.</p>
-                        <p class="text-2xl text-slate-700">This questionnaire takes approximately <strong>10–15 minutes</strong>. There is no time limit — you can take breaks as needed.</p>
+                    <!-- Information Sheet 完整内容 -->
+                    <section class="bg-slate-50 p-8 rounded-[40px] border-2 border-slate-100 space-y-6">
+                        <h2 class="text-3xl font-extrabold text-slate-800">📄 Participant Information Sheet</h2>
+                        <p class="text-2xl font-bold text-slate-900">Beyond words: Analysing the relationship between built environment and walking behaviour of older adults using multimodal AI</p>
+                        <p class="text-xl text-slate-500">[16/02/2026]</p>
+                        <p class="text-2xl text-slate-700 leading-relaxed">You are being invited to take part in a research project. Before you decide whether or not to participate, it is important for you to understand why the research is being done and what it will involve. Please take time to read the following information carefully and discuss it with others if you wish. Ask us if there is anything that is not clear or if you would like more information. Take time to decide whether or not you wish to take part. Thank you for reading this.</p>
+
+                        ${[
+                            {q:'1. What is the project\'s purpose?', a:'The primary aim of this study is to understand is there any difference between current walkability index model and older adults\' walking preferences. Walkability refers to the extent to which a neighbourhood is conductive to walking. The goal of this study is to identify the key indicators that older adults care about mostly, therefore improving the walkability models.'},
+                            {q:'2. Who is doing this research?', a:'Zirui Guo, a PhD student at the School of Information, Journalism and Communication, University of Sheffield.<br>Dr Mengdie Zhuang, a lecturer at the School of Information, Journalism and Communication, University of Sheffield.<br>Dr Suvodeep Mazumdar, a senior lecturer at the School of Information, Journalism and Communication, University of Sheffield.'},
+                            {q:'3. Why have I been chosen?', a:'You have been chosen as this study focuses on walkability for older adults.'},
+                            {q:'4. Do I have to take part?', a:'It is up to you to decide whether or not to take part. If you do decide to take part, you will be asked to read this information sheet and keep a copy of it for your records. You will be asked to click your consent to participate in the study and then proceed to complete the questionnaire. At the end of the survey is a submit button. Please note that as the questionnaire is anonymous you will not be able to withdraw from the study once you have pressed the submit button.<br><br>Please also note that by choosing to participate in this research, this will not create a legally binding agreement, nor is it intended to create an employment relationship between you and the University of Sheffield.'},
+                            {q:'5. What will happen to me if I take part? What do I have to do?', a:'You will be asked to complete a questionnaire regarding your walking preferences. This questionnaire encompasses four parts. In part one, you will be asked to provide basic information such as age, gender, walking time etc. In part two and three, you will be asked to select most and least preferred locations for walking. In part four (optional), you will be asked to write about what kind of factors you consider when deciding to walk during different times of the day/weather conditions?<br><br>Notably, there is no time limit in this questionnaire — you can take a break whenever you need to. In addition, you can stop completing the survey whenever you want to.'},
+                            {q:'6. What are the possible benefits of taking part?', a:'While there are no immediate benefits for participants in this project, it is hoped that the research will contribute to the future development of walkability in Sheffield.'},
+                            {q:'7. What are the possible disadvantages and risks of taking part?', a:'It is not envisioned that there are any risks in participating in this research.'},
+                            {q:'8. Will my taking part in this project be kept confidential?', a:'Yes, we will not gather any identifying information about you.'},
+                            {q:'9. Data Protection', a:'The University of Sheffield will act as the Data Controller for this study. This means that the University is responsible for looking after your information and using it properly. Data will be stored and analysed while kept on Google Cloud, and a secured computer managed by the University of Sheffield. It will be deleted after the project finishes in September 2028. This research is carried out in the public interest in accordance with data protection legislation. Further information can be found in the <a href="https://sheffield.ac.uk/govern/data-protection/privacy/general" target="_blank" class="underline text-blue-600">University\'s Privacy Notice</a>.'},
+                            {q:'10. What will happen to the results of the research project?', a:'Research findings may also be reported in journal articles and other scholarly publications.<br><br><strong>Who is organising and funding the research?</strong> The University of Sheffield.<br><br><strong>Who has ethically reviewed the project?</strong> This project has been ethically approved via the University of Sheffield\'s Ethics Review Procedure, as administered by the Information School.'},
+                            {q:'11. What if something goes wrong and I wish to complain?', a:'If you are dissatisfied with any aspect of the research and wish to make a complaint, please contact Dr Mengdie Zhuang (<a href="mailto:m.zhuang@sheffield.ac.uk" class="underline text-blue-600">m.zhuang@sheffield.ac.uk</a>) in the first instance. If you feel your complaint has not been handled in a satisfactory way you can contact the Head of the Information School Professor Briony Birdi (<a href="mailto:b.birdi@sheffield.ac.uk" class="underline text-blue-600">b.birdi@sheffield.ac.uk</a>). If the complaint relates to how your personal data has been handled, you can find information at: <a href="https://www.sheffield.ac.uk/govern/data-protection/privacy/general" target="_blank" class="underline text-blue-600">University\'s Privacy Notice</a>.<br><br>If you wish to make a report of a concern or incident relating to potential exploitation, abuse or harm resulting from your involvement in this project, please contact the project\'s Designated Safeguarding Contact Dr Mengdie Zhuang (<a href="mailto:m.zhuang@sheffield.ac.uk" class="underline text-blue-600">m.zhuang@sheffield.ac.uk</a>).'},
+                            {q:'Contact for further information', a:'Mr Zirui Guo (<a href="mailto:zguo53@sheffield.ac.uk" class="underline text-blue-600">zguo53@sheffield.ac.uk</a>)<br>School of Information, Journalism and Communication, University of Sheffield, The Wave, 2 Whitham Rd, Sheffield S10 2AH'},
+                        ].map(item => `
+                            <div class="bg-white p-6 rounded-[24px] border border-slate-200">
+                                <p class="text-2xl font-bold text-slate-800 mb-3">${item.q}</p>
+                                <p class="text-2xl text-slate-600 leading-relaxed">${item.a}</p>
+                            </div>
+                        `).join('')}
+
+                        <p class="text-xl text-slate-500 italic text-center">You will be provided with a copy of this information sheet and consent form to keep for your own records.</p>
+                        <p class="text-2xl font-bold text-slate-800 text-center">Thank you for taking the time to participate in this research.</p>
+
+                        <div class="text-center pt-2">
+                            <a href="Survey_information_sheet.docx" download class="text-xl underline text-blue-500">📥 Download a copy of this information sheet</a>
+                        </div>
                     </section>
 
                     <!-- 信息收集说明 -->
@@ -274,6 +302,11 @@
                         class="w-full py-14 rounded-[40px] text-5xl font-black text-white bg-slate-300 cursor-not-allowed transition-all">
                         I AGREE — BEGIN SURVEY ➔
                     </button>
+                    <p class="text-xl text-slate-400 text-center">
+                        You may 
+                        <a href="Survey_information_sheet.docx" download class="underline text-blue-500">download a copy</a> 
+                        of this information sheet for your records.
+                    </p>
                 </div>
             `;}
 
