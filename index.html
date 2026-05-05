@@ -48,6 +48,9 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+            max-width: 900px;  /* 调整这个值 */
+            margin: 0 auto;
+            width: 100%;
         }
         .vote-card {
             min-height: 0;
@@ -96,7 +99,8 @@
         let currentRoundSelection = { best: null, worst: null };
         let results = { 
             user: { 
-                gender: '', age: '', mobility: '', duration: '', purpose: '', 
+                gender: '', age: '', mobility: '', duration: '', purpose: [], 
+                prolificId: '',
                 perceptions: {
                     p1: null, p2: null, p3: null, p4: null, p5: null, p6: null, p7: null, p8: null
                 },
@@ -185,8 +189,10 @@
 
         // --- 3. 渲染控制器 ---
         function updateUI() {
-            if (currentIdx === -3) {
-                renderPart2Intro();
+            if (currentIdx === -15) {
+                renderProlificID();        // -15 对应 Prolific ID 页
+            } else if (currentIdx === -3) {
+                renderPart2Intro();        // -3 对应 Part 2 Intro
             } else if (currentIdx === -2) {
                 renderConsent();
             } else if (currentIdx === -1) {
@@ -197,7 +203,7 @@
                 renderPart3Bridge(); 
             } else if (currentIdx >= 1000 && (currentIdx - 1000) < MAX_P3_ROUNDS) {
                 renderVoteP3(); 
-            } else if (currentIdx === 2000) { // 新增：跳转到开放性问题
+            } else if (currentIdx === 2000) {
                 renderOpenQuestion();
             } else {
                 renderEnd();
@@ -205,9 +211,101 @@
             updateProgress();
         }
 
+        function renderProlificID() {
+            app.innerHTML = `
+                <div class="space-y-12 pb-10">
+                    <div class="text-center space-y-4">
+                        <div class="text-[80px]">🪪</div>
+                        <h1 class="text-5xl font-black text-slate-900 leading-tight">Enter Your Prolific ID</h1>
+                    </div>
+
+                    <section class="bg-blue-50 p-8 rounded-[40px] border-2 border-blue-100 space-y-4">
+                        <h2 class="text-3xl font-extrabold text-blue-900">Why do we need your Prolific ID?</h2>
+                        <p class="text-2xl text-slate-700 leading-relaxed">Your Prolific ID is used for two purposes:</p>
+                        <div class="space-y-4">
+                            ${[
+                                {icon:'✅', text:'<strong>Eligibility verification</strong> — to confirm that you are a registered Prolific participant meeting the study criteria.'},
+                                {icon:'💷', text:'<strong>Compensation</strong> — to ensure your payment is correctly processed after you complete the survey. Participation will be compensated in accordance with the UK National Living Wage.'},
+                            ].map(item => `
+                                <div class="flex gap-5 items-start bg-white p-5 rounded-[24px] border border-blue-100">
+                                    <span class="text-4xl">${item.icon}</span>
+                                    <p class="text-2xl text-slate-700 leading-snug">${item.text}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p class="text-2xl text-slate-700">Your Prolific ID will <strong>not</strong> be linked to your survey responses in any way. All responses remain completely anonymous.</p>
+                    </section>
+
+                    <section class="bg-slate-50 p-8 rounded-[40px] border-2 border-slate-100 space-y-6">
+                        <div>
+                            <label class="text-3xl font-bold text-slate-800 block mb-4">Enter your Prolific ID</label>
+                            <input type="text" id="prolific-id-1"
+                                placeholder="e.g. 5e8f3a2b1c4d6e7f8a9b0c1d"
+                                class="w-full p-6 rounded-[24px] border-4 border-gray-200 text-3xl focus:border-blue-500 focus:outline-none bg-white transition-all"
+                                oninput="checkProlificMatch()">
+                        </div>
+                        <div>
+                            <label class="text-3xl font-bold text-slate-800 block mb-4">Confirm your Prolific ID</label>
+                            <input type="text" id="prolific-id-2"
+                                placeholder="Re-enter your Prolific ID"
+                                class="w-full p-6 rounded-[24px] border-4 border-gray-200 text-3xl focus:border-blue-500 focus:outline-none bg-white transition-all"
+                                oninput="checkProlificMatch()">
+                        </div>
+                        <p id="prolific-match-msg" class="text-2xl font-bold text-red-500 hidden text-center">⚠️ IDs do not match — please check and try again.</p>
+                    </section>
+
+                    <button id="prolific-next-btn" onclick="proceedFromProlific()" disabled
+                        class="w-full py-14 rounded-[40px] text-5xl font-black text-white bg-slate-300 cursor-not-allowed transition-all">
+                        CONTINUE ➔
+                    </button>
+                    <button onclick="currentIdx = -2; updateUI(); window.scrollTo(0,0);"
+                        class="text-2xl text-slate-400 font-bold hover:text-blue-600 block mx-auto text-center">
+                        ⬅️ Go Back
+                    </button>
+                </div>
+            `;
+            window.scrollTo(0, 0);
+        }
+
+        function checkProlificMatch() {
+            const id1 = document.getElementById('prolific-id-1').value.trim();
+            const id2 = document.getElementById('prolific-id-2').value.trim();
+            const btn = document.getElementById('prolific-next-btn');
+            const msg = document.getElementById('prolific-match-msg');
+
+            if (id1 && id2 && id1 === id2) {
+                btn.classList.remove('bg-slate-300', 'cursor-not-allowed');
+                btn.classList.add('bg-blue-500', 'hover:bg-blue-700', 'shadow-2xl');
+                btn.disabled = false;
+                msg.classList.add('hidden');
+            } else {
+                btn.classList.add('bg-slate-300', 'cursor-not-allowed');
+                btn.classList.remove('bg-blue-500', 'hover:bg-blue-700', 'shadow-2xl');
+                btn.disabled = true;
+                if (id1 && id2 && id1 !== id2) {
+                    msg.classList.remove('hidden');
+                } else {
+                    msg.classList.add('hidden');
+                }
+            }
+        }
+
+        function proceedFromProlific() {
+            const id1 = document.getElementById('prolific-id-1').value.trim();
+            results.user.prolificId = id1;
+            currentIdx = -1;
+            updateUI();
+            window.scrollTo(0, 0);
+        }
+        
         function renderConsent() {
             app.innerHTML = `
                 <div class="space-y-12 pb-10">
+                    <!-- 设备提示 -->
+                    <div class="bg-amber-50 border-2 border-amber-200 p-6 rounded-[30px] flex gap-4 items-center">
+                        <span class="text-4xl">💻</span>
+                        <p class="text-2xl text-amber-800 font-bold">For the best experience, please complete this survey on a <strong>TABLET or COMPUTER</strong>. Mobile phones are not recommended.</p>
+                    </div>
                     <!-- 标题 -->
                     <div class="text-center space-y-4">
                         <div class="text-[80px]">🚶</div>
@@ -224,11 +322,11 @@
 
                         ${[
                             {q:'1. What is the project\'s purpose?', a:'The primary aim of this study is to understand is there any difference between current walkability index model and older adults\' walking preferences. Walkability refers to the extent to which a neighbourhood is conductive to walking. The goal of this study is to identify the key indicators that older adults care about mostly, therefore improving the walkability models.'},
-                            {q:'2. Who is doing this research?', a:'Zirui Guo, a PhD student at the School of Information, Journalism and Communication, University of Sheffield.<br>Dr Mengdie Zhuang, a lecturer at the School of Information, Journalism and Communication, University of Sheffield.<br>Dr Suvodeep Mazumdar, a senior lecturer at the School of Information, Journalism and Communication, University of Sheffield.'},
+                            {q:'2. Who is doing this research?', a:'Zirui Guo, a PhD student at the School of Information, Journalism and Communication, University of Sheffield.<br>Dr Mengdie Zhuang, a lecturer at the School of Information, Journalism and Communication, University of Sheffield.<br>Dr Suvodeep Mazumdar, a senior lecturer at the School of Information, Journalism and Communication, University of Sheffield. <br>Dr Harry Kai-Ho Chan, a lecturer at the School of Information, Journalism and Communication, University of Sheffield.'},
                             {q:'3. Why have I been chosen?', a:'You have been chosen as this study focuses on walkability for older adults.'},
                             {q:'4. Do I have to take part?', a:'It is up to you to decide whether or not to take part. If you do decide to take part, you will be asked to read this information sheet and keep a copy of it for your records. You will be asked to click your consent to participate in the study and then proceed to complete the questionnaire. At the end of the survey is a submit button. Please note that as the questionnaire is anonymous you will not be able to withdraw from the study once you have pressed the submit button.<br><br>Please also note that by choosing to participate in this research, this will not create a legally binding agreement, nor is it intended to create an employment relationship between you and the University of Sheffield.'},
                             {q:'5. What will happen to me if I take part? What do I have to do?', a:'You will be asked to complete a questionnaire regarding your walking preferences. This questionnaire encompasses four parts. In part one, you will be asked to provide basic information such as age, gender, walking time etc. In part two and three, you will be asked to select most and least preferred locations for walking. In part four (optional), you will be asked to write about what kind of factors you consider when deciding to walk during different times of the day/weather conditions?<br><br>Notably, there is no time limit in this questionnaire — you can take a break whenever you need to. In addition, you can stop completing the survey whenever you want to.'},
-                            {q:'6. What are the possible benefits of taking part?', a:'While there are no immediate benefits for participants in this project, it is hoped that the research will contribute to the future development of walkability in Sheffield.'},
+                            {q:'6. What are the possible benefits of taking part?', a:'You will be compensated in accordance with the UK National Living Wage. In addition, your participation will contribute to the research on walkability and help us understand how to create more walkable environments for older adults.'},
                             {q:'7. What are the possible disadvantages and risks of taking part?', a:'It is not envisioned that there are any risks in participating in this research.'},
                             {q:'8. Will my taking part in this project be kept confidential?', a:'Yes, we will not gather any identifying information about you.'},
                             {q:'9. Data Protection', a:'The University of Sheffield will act as the Data Controller for this study. This means that the University is responsible for looking after your information and using it properly. Data will be stored and analysed while kept on Google Cloud, and a secured computer managed by the University of Sheffield. It will be deleted after the project finishes in September 2028. This research is carried out in the public interest in accordance with data protection legislation. Further information can be found in the <a href="https://sheffield.ac.uk/govern/data-protection/privacy/general" target="_blank" class="underline text-blue-600">University\'s Privacy Notice</a>.'},
@@ -248,34 +346,6 @@
                         <div class="text-center pt-2">
                             <a href="Survey_information_sheet.docx" download class="text-xl underline text-blue-500">📥 Download a copy of this information sheet</a>
                         </div>
-                    </section>
-
-                    <!-- 信息收集说明 -->
-                    <section class="bg-slate-50 p-8 rounded-[40px] border-2 border-slate-100 space-y-6">
-                        <h2 class="text-3xl font-extrabold text-slate-800">📝 What We Will Collect</h2>
-                        <div class="space-y-4">
-                            ${[
-                                {icon:'👤', title:'Basic Personal Information', desc:'Gender, age group, mobility status, typical walking duration, and walking purpose.'},
-                                {icon:'🏙️', title:'Street Preference Ratings (Part 2)', desc:'Your most and least preferred walking locations, shown as street-level images across 13 rounds.'},
-                                {icon:'🌦️', title:'Contextual Preference Ratings (Part 3)', desc:'Your preferences for the same streets shown under different weather and lighting conditions (sunny, rainy, snowy, twilight) across 12 rounds.'},
-                                {icon:'💬', title:'Optional Open Comment (Part 4)', desc:'What factors you consider when deciding to walk under different weather or time conditions.'}
-                            ].map(item => `
-                                <div class="flex gap-5 items-start bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm">
-                                    <span class="text-4xl">${item.icon}</span>
-                                    <div>
-                                        <p class="text-2xl font-bold text-slate-800">${item.title}</p>
-                                        <p class="text-xl text-slate-500 mt-1">${item.desc}</p>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </section>
-
-                    <!-- 隐私说明 -->
-                    <section class="bg-green-50 p-8 rounded-[40px] border-2 border-green-100 space-y-3">
-                        <h2 class="text-3xl font-extrabold text-green-900">🔒 Privacy & Confidentiality</h2>
-                        <p class="text-2xl text-slate-700 leading-relaxed">This survey is <strong>completely anonymous</strong> — no identifying information will be collected. Data will be stored securely on University of Sheffield systems and deleted after the project ends in September 2028. This study has been ethically approved by the University of Sheffield.</p>
-                        <p class="text-2xl text-slate-700">For questions, contact: <span class="font-bold text-green-800">zguo53@sheffield.ac.uk</span></p>
                     </section>
 
                     <!-- 同意勾选 -->
@@ -302,11 +372,6 @@
                         class="w-full py-14 rounded-[40px] text-5xl font-black text-white bg-slate-300 cursor-not-allowed transition-all">
                         I AGREE — BEGIN SURVEY ➔
                     </button>
-                    <p class="text-xl text-slate-400 text-center">
-                        You may 
-                        <a href="Survey_information_sheet.docx" download class="underline text-blue-500">download a copy</a> 
-                        of this information sheet for your records.
-                    </p>
                 </div>
             `;}
 
@@ -325,7 +390,7 @@ function checkConsent() {
 }
 
 function proceedFromConsent() {
-    currentIdx = -1;
+    currentIdx = -15;
     updateUI();
     window.scrollTo(0, 0);
 }
@@ -333,14 +398,15 @@ function proceedFromConsent() {
         // --- 4. 页面渲染 ---
         function renderCombinedInfo() {
             const perceptions = [
-                "I prefer walking in streets with many POIs (shops, services, public transport) nearby.",
-                "I prefer walking in areas where homes, shops, offices, and other facilities are all close together, rather than areas with only one type of building.",
-                "I care about safety while walking.",
-                "Streets with vegetation, clean environment and attractive architecture make walking more pleasant",
-                "I feel more comfortable walking in areas that are lively, where I might meet familiar faces, and where there are spaces designed for people to gather and interact",
-                "My physical condition and walking stability affect my willingness to walk",
-                "Well-maintained pedestrian pathways and good urban furniture encourage me to walk",
-                "Flat terrain without steep slopes or obstacles makes me more willing to walk"
+                "I prefer walking in streets with many points of interest such as shops, services, public transport nearby.",
+                "I prefer walking in neighbourhoods where I can find homes, shops, and services all in the same area, rather than areas that are purely residential or purely commercial.",
+                "I care about factors, such as traffic signs and street light, that may affect my safety while walking.",
+                "I find streets with greenery, clean surroundings, and attractive buildings more enjoyable to walk in.",
+                "I prefer walking in lively areas with an active street life and people around.",
+                "I feel more comfortable walking in areas where I might encounter familiar faces or people from my community.",
+                "I consider my physical condition and walking stability when deciding whether to walk.",
+                "I prefer walking on well-maintained pathways with good urban furniture (e.g. benches).",
+                "I prefer walking on flat terrain without steep slopes or obstacles."
             ];
 
             const u = results.user;
@@ -353,14 +419,14 @@ function proceedFromConsent() {
                     <section class="bg-slate-50 p-8 rounded-[40px]">
                         <h2 class="text-4xl font-extrabold mb-8 text-slate-800">1. What is your gender?</h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            ${['Male', 'Female', 'Prefer not to say'].map(v => `<button onclick="selectInfo('gender', '${v}', this)" class="info-btn bg-white border-4 ${u.gender === v ? 'border-blue-600 ring-8' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-blue-400">${v}</button>`).join('')}
+                            ${['Male', 'Female', 'Prefer not to say'].map(v => `<button onclick="selectInfo('gender', '${v}', this)" class="info-btn bg-white border-4 ${u.gender === v ? 'bg-sky-500 text-white border-transparent' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-blue-400">${v}</button>`).join('')}
                         </div>
                     </section>
 
                     <section class="bg-slate-50 p-8 rounded-[40px]">
                         <h2 class="text-4xl font-extrabold mb-8 text-slate-800">2. What is your age?</h2>
                         <div class="grid grid-cols-3 gap-6">
-                            ${['55-64', '65-74', '75+'].map(v => `<button onclick="selectInfo('age', '${v}', this)" class="info-btn bg-white border-4 ${u.age === v ? 'border-emerald-600 ring-8' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-emerald-400">${v}</button>`).join('')}
+                            ${['55-64', '65-74', '75+'].map(v => `<button onclick="selectInfo('age', '${v}', this)" class="info-btn bg-white border-4 ${u.age === v ? 'bg-sky-500 text-white border-transparent' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-emerald-400">${v}</button>`).join('')}
                         </div>
                     </section>
 
@@ -372,7 +438,7 @@ function proceedFromConsent() {
                                 {id:'Assisted', l:'Assisted (Walking with cane/walker)'},
                                 {id:'Dependent', l:'Dependent (Walking with wheelchair)'}
                             ].map(item => `
-                                <button onclick="selectInfo('mobility', '${item.id}', this)" class="info-btn w-full bg-white border-4 ${u.mobility === item.id ? 'border-blue-600 ring-8' : 'border-gray-200'} py-8 text-3xl font-bold px-12 text-left">
+                                <button onclick="selectInfo('mobility', '${item.id}', this)" class="info-btn w-full bg-white border-4 ${u.mobility === item.id ? 'bg-sky-500 text-white border-transparent' : 'border-gray-200'} py-8 text-3xl font-bold px-12 text-left">
                                     ${item.l}
                                 </button>
                             `).join('')}
@@ -382,7 +448,7 @@ function proceedFromConsent() {
                     <section class="bg-slate-50 p-8 rounded-[40px]">
                         <h2 class="text-4xl font-extrabold mb-8 text-slate-800">4. How long do you typically walk per day?</h2>
                         <div class="grid grid-cols-3 gap-6">
-                        ${['<10min', '10-20min', '20min+'].map(v => `<button onclick="selectInfo('duration', '${v}', this)" class="info-btn bg-white border-4 ${u.duration === v ? 'border-orange-600 ring-8' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-orange-400">${v}</button>`).join('')}
+                        ${['<10min', '10-20min', '20min+'].map(v => `<button onclick="selectInfo('duration', '${v}', this)" class="info-btn bg-white border-4 ${u.duration === v ? 'bg-sky-500 text-white border-transparent' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-orange-400">${v}</button>`).join('')}
                         </div>
                     </section>
 
@@ -391,9 +457,15 @@ function proceedFromConsent() {
                         <div class="mb-8 space-y-2">
                             <p class="text-2xl text-slate-500"><span class="font-bold text-slate-700">Recreational:</span> Walking for leisure, exercise, or enjoyment (e.g. a stroll in the park).</p>
                             <p class="text-2xl text-slate-500"><span class="font-bold text-slate-700">Utilitarian:</span> Walking to get somewhere, such as shops, appointments, or public transport.</p>
+                            <p class="text-xl text-slate-400 font-bold">You may select both.</p>
                         </div>
-                        <div class="grid grid-cols-3 gap-6">
-                            ${['Recreational', 'Utilitarian', 'Both'].map(v => `<button onclick="selectInfo('purpose', '${v}', this)" class="info-btn bg-white border-4 ${u.purpose === v ? 'border-red-600 ring-8' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-red-400">${v}</button>`).join('')}
+                        <div class="grid grid-cols-2 gap-6">
+                            ${['Recreational', 'Utilitarian'].map(v => `
+                                <button onclick="togglePurpose('${v}', this)" 
+                                    class="info-btn bg-white border-4 ${u.purpose.includes(v) ? 'bg-sky-500 text-white border-transparent' : 'border-gray-200'} py-10 text-3xl font-bold hover:border-red-400">
+                                    ${v}
+                                </button>
+                            `).join('')}
                         </div>
                     </section>
 
@@ -407,8 +479,8 @@ function proceedFromConsent() {
                                     <div class="bg-white p-6 rounded-[30px] shadow-sm border-2 border-slate-200">
                                         <p class="text-2xl font-bold text-slate-700 mb-6 leading-snug">${text}</p>
                                         <div class="grid grid-cols-2 gap-4">
-                                            <button onclick="setTF('${key}', true, this)" class="tf-btn py-6 rounded-2xl text-3xl font-black border-4 ${val === true ? 'bg-green-600 text-white border-transparent ring-8' : 'bg-gray-50 text-gray-400 border-gray-100'}">TRUE</button>
-                                            <button onclick="setTF('${key}', false, this)" class="tf-btn py-6 rounded-2xl text-3xl font-black border-4 ${val === false ? 'bg-red-600 text-white border-transparent ring-8' : 'bg-gray-50 text-gray-400 border-gray-100'}">FALSE</button>
+                                            <button onclick="setTF('${key}', true, this)" class="tf-btn py-6 rounded-2xl text-3xl font-black border-4 ${val === true ? 'bg-sky-500 text-white border-transparent ring-8' : 'bg-gray-50 text-gray-400 border-gray-100'}">TRUE</button>
+                                            <button onclick="setTF('${key}', false, this)" class="tf-btn py-6 rounded-2xl text-3xl font-black border-4 ${val === false ? 'bg-sky-500 text-white border-transparent ring-8' : 'bg-gray-50 text-gray-400 border-gray-100'}">FALSE</button>
                                         </div>
                                     </div>
                                 `;
@@ -417,9 +489,27 @@ function proceedFromConsent() {
                     </section>
 
                     <button id="start-btn" onclick="startVoting()" class="w-full py-16 bg-slate-300 text-white rounded-[40px] text-6xl font-black shadow-2xl cursor-not-allowed" disabled>START RESEARCH</button>
+                    <button onclick="currentIdx = -15; updateUI(); window.scrollTo(0,0);" 
+                        class="text-2xl text-slate-400 font-bold hover:text-blue-600 block mx-auto text-center mt-4">
+                        ⬅️ Go Back
+                    </button>
                 </div>
             `;
             checkStartButton(); // 关键：渲染时立即检查按钮状态
+        }
+
+        function togglePurpose(v, el) {
+            const idx = results.user.purpose.indexOf(v);
+            if (idx === -1) {
+                results.user.purpose.push(v);
+                el.classList.remove('border-gray-200', 'bg-white');
+                el.classList.add('bg-sky-500', 'text-white', 'border-transparent');
+            } else {
+                results.user.purpose.splice(idx, 1);
+                el.classList.remove('bg-sky-500', 'text-white', 'border-transparent');
+                el.classList.add('border-gray-200', 'bg-white');
+            }
+            checkStartButton();
         }
 
         function renderPart2Intro() {
@@ -449,10 +539,10 @@ function proceedFromConsent() {
                     </div>
 
                     <button onclick="currentIdx = 0; updateUI(); window.scrollTo(0,0);" 
-                        class="w-full py-14 rounded-[40px] text-5xl font-black text-white bg-blue-600 hover:bg-blue-700 shadow-2xl transition-all active:scale-95">
+                        class="w-full py-14 rounded-[40px] text-5xl font-black text-white bg-blue-500 hover:bg-blue-700 shadow-2xl transition-all active:scale-95">
                         START PART 2 ➔
                     </button>
-                    <button onclick="currentIdx = -1; updateUI(); window.scrollTo(0,0);" 
+                    <button onclick="currentIdx = -15; updateUI(); window.scrollTo(0,0);" 
                         class="text-2xl text-slate-400 font-bold hover:text-blue-600">
                         ⬅️ Go Back to Part 1
                     </button>
@@ -479,6 +569,7 @@ function proceedFromConsent() {
 
                 </div>
             `;
+            window.scrollTo(0,0)
         }
 
         function handleDeselect(id, part) {
@@ -505,7 +596,7 @@ function proceedFromConsent() {
             app.innerHTML = `
                 <div class="vote-container">
                     <div class="text-center bg-slate-50 py-2 rounded-[30px] border-2 border-slate-100 flex-shrink-0">
-                        <p class="text-3xl text-slate-700 font-bold">Select <span class="text-green-600">BEST</span> and <span class="text-red-600">WORST</span> <span class="text-slate-400 text-xl block mt-1">(Double click to deselect)</span></p>
+                        <p class="text-3xl text-slate-700 font-bold">Select <span class="text-green-600">BEST</span> and <span class="text-red-600">WORST</span> locations of walking <span class="text-slate-400 text-xl block mt-1">(Double click to deselect)</span></p>
                     </div>
 
                     <div class="vote-grid">
@@ -541,7 +632,7 @@ function proceedFromConsent() {
                     </div>
 
                     <div class="flex-shrink-0 flex flex-col items-center gap-2">
-                        <button id="next-btn" onclick="saveRound()" ${isDone ? '' : 'disabled'} class="w-full py-5 rounded-[24px] text-3xl font-black text-white transition-all ${isDone ? 'bg-blue-600 hover:bg-blue-700 shadow-xl' : 'bg-slate-300 cursor-not-allowed'}">CONFIRM & NEXT ➔</button>
+                        <button id="next-btn" onclick="saveRound()" ${isDone ? '' : 'disabled'} class="w-full py-5 rounded-[24px] text-3xl font-black text-white transition-all ${isDone ? 'bg-blue-500 hover:bg-blue-700 shadow-xl' : 'bg-slate-300 cursor-not-allowed'}">CONFIRM & NEXT ➔</button>
                         <div class="flex justify-center items-center gap-12 w-full">
                             <button onclick="goBack()" class="text-2xl text-slate-400 font-bold hover:text-blue-600">⬅️ Go Back</button>
                             <button onclick="resetRound()" class="text-2xl text-slate-400 font-bold hover:text-orange-500">🔄 Reset</button>
@@ -623,7 +714,7 @@ function proceedFromConsent() {
                     </div>
 
                     <div class="pt-6 flex flex-col items-center gap-8">
-                        <button onclick="saveComment()" class="w-full py-12 rounded-[40px] text-5xl font-black text-white bg-blue-600 hover:bg-blue-700 shadow-2xl transition-all active:scale-95">
+                        <button onclick="saveComment()" class="w-full py-12 rounded-[40px] text-5xl font-black text-white bg-blue-500 hover:bg-blue-700 shadow-2xl transition-all active:scale-95">
                             FINISH SURVEY ➔
                         </button>
                         <button onclick="currentIdx = 1000 + MAX_P3_ROUNDS - 1; results.votes_p3.pop(); updateUI();" class="text-3xl text-slate-400 font-bold hover:text-blue-600">
@@ -670,17 +761,17 @@ function proceedFromConsent() {
             // 2. 视觉反馈：清除同组按钮的高亮
             const parent = el.parentElement;
             parent.querySelectorAll('.tf-btn').forEach(btn => {
-                btn.classList.remove('bg-green-600', 'bg-red-600', 'text-white', 'border-transparent');
+                btn.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-500', 'text-white', 'border-transparent');
                 btn.classList.add('bg-gray-50', 'text-gray-400', 'border-gray-100');
             });
 
             // 3. 高亮当前选中的按钮
             if (value === true) {
                 el.classList.remove('bg-gray-50', 'text-gray-400');
-                el.classList.add('bg-green-600', 'text-white', 'border-transparent');
+                el.classList.add('bg-blue-500', 'text-white', 'border-transparent');
             } else {
                 el.classList.remove('bg-gray-50', 'text-gray-400');
-                el.classList.add('bg-red-600', 'text-white', 'border-transparent');
+                el.classList.add('bg-blue-500', 'text-white', 'border-transparent');
             }
 
             // 4. 检查是否所有必填项都已完成
@@ -690,7 +781,7 @@ function proceedFromConsent() {
         function checkStartButton() {
             const u = results.user;
             const p = u.perceptions;
-            const basicInfoDone = u.gender && u.age && u.mobility && u.duration && u.purpose;
+            const basicInfoDone = u.gender && u.age && u.mobility && u.duration && u.purpose.length > 0;
             const perceptionsDone = Object.values(p).every(val => val !== null);
 
             console.log("基础信息完成:", basicInfoDone, "T/F题完成:", perceptionsDone, "当前数据:", results.user);
@@ -698,12 +789,12 @@ function proceedFromConsent() {
             const b = document.getElementById('start-btn');
             if (basicInfoDone && perceptionsDone) {
                 b.classList.remove('bg-slate-300', 'cursor-not-allowed');
-                b.classList.add('bg-blue-600');
+                b.classList.add('bg-blue-500');
                 b.disabled = false;
             } else {
                 // 如果没完成，确保按钮保持灰色不可点状态
                 b.classList.add('bg-slate-300', 'cursor-not-allowed');
-                b.classList.remove('bg-blue-600');
+                b.classList.remove('bg-blue-500');
                 b.disabled = true;
             }
         }
@@ -712,25 +803,31 @@ function proceedFromConsent() {
         function selectInfo(k, v, el) {
             results.user[k] = v;
             el.parentElement.querySelectorAll('.info-btn').forEach(btn => {
-                btn.classList.remove('border-blue-600', 'ring-8'); 
-                btn.classList.add('border-gray-200');
+                btn.classList.remove('bg-sky-500', 'text-white', 'border-transparent');
+                btn.classList.add('border-gray-200', 'bg-white');
             });
-            el.classList.add('border-blue-600', 'ring-8');
-            checkStartButton(); // 统一调用检查
+            el.classList.remove('border-gray-200', 'bg-white');
+            el.classList.add('bg-sky-500', 'text-white', 'border-transparent');
+            checkStartButton();
         }
 
 
         function handleLocationClick(id, el) {
-            if (!currentRoundSelection.best) {
+            if (currentRoundSelection.worst === id) {
+                // 点击的是已选中的 worst，取消它
+                currentRoundSelection.worst = null;
+            } else if (!currentRoundSelection.best) {
                 currentRoundSelection.best = id; 
             } else if (!currentRoundSelection.worst && id !== currentRoundSelection.best) {
                 currentRoundSelection.worst = id; 
             }
-            renderVote(); // 每次点击重新渲染，以点亮 Next 按钮和高亮边框
+            renderVote();
         }
 
         function handleLocationClickP3(id, ctx, el) {
-            if (!currentRoundSelection.best) {
+            if (currentRoundSelection.worst && currentRoundSelection.worst.id === id && currentRoundSelection.worst.ctx === ctx) {
+                currentRoundSelection.worst = null;
+            } else if (!currentRoundSelection.best) {
                 currentRoundSelection.best = { id, ctx }; 
             } else if (!currentRoundSelection.worst && (id !== currentRoundSelection.best.id || ctx !== currentRoundSelection.best.ctx)) {
                 currentRoundSelection.worst = { id, ctx }; 
@@ -754,6 +851,7 @@ function proceedFromConsent() {
             currentIdx += 4;
             if(currentIdx >= 52) currentIdx = 999;
             updateUI();
+            window.scrollTo(0, 0);
         }
 
         function saveRoundP3() {
@@ -777,6 +875,7 @@ function proceedFromConsent() {
                 currentIdx++;
             }
             updateUI();
+            window.scrollTo(0, 0);
         }
 
         function goBack() { 
@@ -791,6 +890,7 @@ function proceedFromConsent() {
                 }
             }
             updateUI(); 
+            window.scrollTo(0, 0);
         }
 
         // P3 的返回逻辑同理
@@ -803,6 +903,7 @@ function proceedFromConsent() {
                 }
             }
             updateUI();
+            window.scrollTo(0, 0);
         }
 
         function resetRound() { 
@@ -816,24 +917,11 @@ function proceedFromConsent() {
             }
         }
         function startVoting() { 
-            console.log("进入调研...");
+            console.log("进入调研...", currentIdx);
             if (surveyPool.length === 0) { 
                 initSurvey(); 
             }
-            
-            // 如果是第一次进入 Part 2 (Idx 是 -1)，则设为 0
-            // 如果是从 Part 2 返回后再点 Start，则保留 currentIdx 不归零，实现“断点续看”
-            if (currentIdx === -1) {
-                currentIdx = -3; 
-            } else {
-                // 如果已经有投票记录了，尝试把当前题目的选择找回来
-                // 这一步能解决你说的“选择消失”的问题
-                const existingVote = results.votes[currentIdx / 4];
-                if (existingVote) {
-                    currentRoundSelection = { best: existingVote.best, worst: existingVote.worst };
-                }
-            }
-            
+            currentIdx = -3;
             updateUI(); 
             window.scrollTo(0,0); 
         }
@@ -884,6 +972,7 @@ function proceedFromConsent() {
             let currentStep;
             
             if (currentIdx === -2) currentStep = 0;
+            else if (currentIdx === -15) currentStep = 0;
             else if (currentIdx === -3 || currentIdx === -1) currentStep = 1;
             else if (currentIdx < 999) currentStep = Math.floor(currentIdx / 4) + 2;
             else if (currentIdx === 999) currentStep = 1 + MAX_P2_ROUNDS + 1;
