@@ -239,6 +239,7 @@
                     </section>
 
                     <section class="bg-slate-50 p-8 rounded-[40px] border-2 border-slate-100 space-y-6">
+                        <p class="text-2xl text-red-500 italic text-center">Please note that this response should AUTO-FILL with the correct ID.</p>
                         <div>
                             <label class="text-3xl font-bold text-slate-800 block mb-4">Enter your Prolific ID</label>
                             <input type="text" id="prolific-id-1"
@@ -989,6 +990,11 @@ function proceedFromConsent() {
                 statusEl.innerHTML = "❌ Upload failed. Please contact the researcher.";
                 statusEl.classList.remove('animate-pulse', 'text-blue-600');
                 statusEl.classList.add('text-red-600');
+                // 即便失败也跳转，让参与者拿到报酬
+                window.onbeforeunload = null;
+                setTimeout(() => {
+                    window.location.href = "https://app.prolific.com/submissions/complete?cc=C12SB6TC";
+                }, 3000);
             }
         }
 
