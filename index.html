@@ -93,6 +93,8 @@
         const SUPABASE_URL = 'https://zuvbanupgxjoftrrvoqt.supabase.co'; // 填入 image_5c4aab.png 里的地址
         const SUPABASE_KEY = 'sb_publishable_Wh4FHWihk-fOTYBrhhIHew_9cOIYESN'; // 填入 image_5c4acc.png 里的 Key
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const urlParams = new URLSearchParams(window.location.search);
+        const prolificIdFromURL = urlParams.get('PROLIFIC_PID');
 
         // --- 1. 全局状态 / Global State ---
         let currentIdx = -1; 
@@ -102,7 +104,7 @@
                 gender: '', age: '', mobility: '', duration: '', purpose: [], 
                 prolificId: '',
                 perceptions: {
-                    p1: null, p2: null, p3: null, p4: null, p5: null, p6: null, p7: null, p8: null
+                    p1: null, p2: null, p3: null, p4: null, p5: null, p6: null, p7: null, p8: null, p9: null
                 },
                 comment: '' // 确保添加了这一行
             }, 
@@ -240,6 +242,7 @@
                         <div>
                             <label class="text-3xl font-bold text-slate-800 block mb-4">Enter your Prolific ID</label>
                             <input type="text" id="prolific-id-1"
+                                value="${prolificIdFromURL || ''}"
                                 placeholder="e.g. 5e8f3a2b1c4d6e7f8a9b0c1d"
                                 class="w-full p-6 rounded-[24px] border-4 border-gray-200 text-3xl focus:border-blue-500 focus:outline-none bg-white transition-all"
                                 oninput="checkProlificMatch()">
@@ -247,6 +250,7 @@
                         <div>
                             <label class="text-3xl font-bold text-slate-800 block mb-4">Confirm your Prolific ID</label>
                             <input type="text" id="prolific-id-2"
+                                value="${prolificIdFromURL || ''}"
                                 placeholder="Re-enter your Prolific ID"
                                 class="w-full p-6 rounded-[24px] border-4 border-gray-200 text-3xl focus:border-blue-500 focus:outline-none bg-white transition-all"
                                 oninput="checkProlificMatch()">
@@ -265,6 +269,9 @@
                 </div>
             `;
             window.scrollTo(0, 0);
+            if (prolificIdFromURL) {
+            setTimeout(() => checkProlificMatch(), 50);
+            }
         }
 
         function checkProlificMatch() {
@@ -400,8 +407,8 @@ function proceedFromConsent() {
             const perceptions = [
                 "I prefer walking in streets with many points of interest such as shops, services, public transport nearby.",
                 "I prefer walking in neighbourhoods where I can find homes, shops, and services all in the same area, rather than areas that are purely residential or purely commercial.",
-                "I care about factors, such as traffic signs and street light, that may affect my safety while walking.",
-                "I find streets with greenery, clean surroundings, and attractive buildings more enjoyable to walk in.",
+                "When I am walking, I find myself constantly assessing my own safety, such as I would look if there is any traffic sign on the street or any suspicious activity.",
+                "I prefer to walk in spaces that are aesthetically pleasing. Such as architecture facade, well maintained green spaces.",
                 "I prefer walking in lively areas with an active street life and people around.",
                 "I feel more comfortable walking in areas where I might encounter familiar faces or people from my community.",
                 "I consider my physical condition and walking stability when deciding whether to walk.",
@@ -470,17 +477,33 @@ function proceedFromConsent() {
                     </section>
 
                     <section id="q6-section" class="bg-indigo-50 p-8 rounded-[40px] border-4 border-indigo-100">
-                        <h2 class="text-4xl font-extrabold mb-8 text-indigo-900 text-center">6. Which of the following descriptions best matches your perception?</h2>
+                        <h2 class="text-4xl font-extrabold mb-4 text-indigo-900 text-center">6. To what extent do you agree with the following statements?</h2>
+                        <p class="text-2xl text-center text-slate-500 mb-8 italic">Please rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).</p>
                         <div class="space-y-8">
                             ${perceptions.map((text, i) => {
                                 const key = `p${i+1}`;
                                 const val = results.user.perceptions[key];
+                                const likertOptions = [
+                                    {v: 1, label: 'Strongly\nDisagree'},
+                                    {v: 2, label: 'Disagree'},
+                                    {v: 3, label: 'Neutral'},
+                                    {v: 4, label: 'Agree'},
+                                    {v: 5, label: 'Strongly\nAgree'}
+                                ];
                                 return `
                                     <div class="bg-white p-6 rounded-[30px] shadow-sm border-2 border-slate-200">
-                                        <p class="text-2xl font-bold text-slate-700 mb-6 leading-snug">${text}</p>
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <button onclick="setTF('${key}', true, this)" class="tf-btn py-6 rounded-2xl text-3xl font-black border-4 ${val === true ? 'bg-sky-500 text-white border-transparent ring-8' : 'bg-gray-50 text-gray-400 border-gray-100'}">TRUE</button>
-                                            <button onclick="setTF('${key}', false, this)" class="tf-btn py-6 rounded-2xl text-3xl font-black border-4 ${val === false ? 'bg-sky-500 text-white border-transparent ring-8' : 'bg-gray-50 text-gray-400 border-gray-100'}">FALSE</button>
+                                        <p class="text-2xl font-bold text-slate-700 mb-6 leading-snug">${i+1}. ${text}</p>
+                                        <div class="grid grid-cols-5 gap-3">
+                                            ${likertOptions.map(opt => `
+                                                <button onclick="setLikert('${key}', ${opt.v}, this)"
+                                                    class="likert-btn flex flex-col items-center justify-center py-5 px-2 rounded-2xl border-4 transition-all
+                                                        ${val === opt.v
+                                                            ? 'bg-sky-500 text-white border-transparent shadow-lg scale-105'
+                                                            : 'bg-gray-50 text-slate-500 border-gray-100 hover:border-sky-300'}">
+                                                    <span class="text-4xl font-black">${opt.v}</span>
+                                                    <span class="text-base font-bold mt-2 leading-tight text-center whitespace-pre-line">${opt.label}</span>
+                                                </button>
+                                            `).join('')}
                                         </div>
                                     </div>
                                 `;
@@ -754,27 +777,22 @@ function proceedFromConsent() {
 
 
         // --- 5. 交互核心逻辑 ---
-        function setTF(key, value, el) {
-            // 1. 存储数据
+        function setLikert(key, value, el) {
+            // 1. 存储 1-5 整数
             results.user.perceptions[key] = value;
 
-            // 2. 视觉反馈：清除同组按钮的高亮
+            // 2. 视觉反馈：清除同组所有按钮高亮
             const parent = el.parentElement;
-            parent.querySelectorAll('.tf-btn').forEach(btn => {
-                btn.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-500', 'text-white', 'border-transparent');
-                btn.classList.add('bg-gray-50', 'text-gray-400', 'border-gray-100');
+            parent.querySelectorAll('.likert-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-500', 'text-white', 'border-transparent', 'shadow-lg', 'scale-105');
+                btn.classList.add('bg-gray-50', 'text-slate-500', 'border-gray-100');
             });
 
             // 3. 高亮当前选中的按钮
-            if (value === true) {
-                el.classList.remove('bg-gray-50', 'text-gray-400');
-                el.classList.add('bg-blue-500', 'text-white', 'border-transparent');
-            } else {
-                el.classList.remove('bg-gray-50', 'text-gray-400');
-                el.classList.add('bg-blue-500', 'text-white', 'border-transparent');
-            }
+            el.classList.remove('bg-gray-50', 'text-slate-500', 'border-gray-100');
+            el.classList.add('bg-sky-500', 'text-white', 'border-transparent', 'shadow-lg', 'scale-105');
 
-            // 4. 检查是否所有必填项都已完成
+            // 4. 检查 START RESEARCH 按钮状态
             checkStartButton();
         }
 
@@ -784,7 +802,7 @@ function proceedFromConsent() {
             const basicInfoDone = u.gender && u.age && u.mobility && u.duration && u.purpose.length > 0;
             const perceptionsDone = Object.values(p).every(val => val !== null);
 
-            console.log("基础信息完成:", basicInfoDone, "T/F题完成:", perceptionsDone, "当前数据:", results.user);
+            console.log("基础信息完成:", basicInfoDone, "Likert题完成:", perceptionsDone, "当前数据:", results.user);
 
             const b = document.getElementById('start-btn');
             if (basicInfoDone && perceptionsDone) {
@@ -954,9 +972,16 @@ function proceedFromConsent() {
                 if (error) throw error;
 
                 // 3. 上传成功后，更新状态文字，不再弹出下载框
-                statusEl.innerHTML = "✅ Results saved successfully!";
+                statusEl.innerHTML = "✅ Results saved! Redirecting back to Prolific...";
                 statusEl.classList.remove('animate-pulse', 'text-blue-600');
                 statusEl.classList.add('text-green-600');
+
+                // 取消离开页面警告，避免跳转时弹出确认框
+                window.onbeforeunload = null;
+
+                setTimeout(() => {
+                    window.location.href = "https://app.prolific.com/submissions/complete?cc=C12SB6TC";  //replace with your actual Prolific completion URL
+                }, 2000);
                 
             } catch (err) {
                 console.error('Upload Error:', err);
