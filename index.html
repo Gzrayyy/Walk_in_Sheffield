@@ -114,8 +114,8 @@
 
         let surveyPool = [];   
         let surveyPoolP3 = []; 
-        const MAX_P2_ROUNDS = 13; 
-        const MAX_P3_ROUNDS = 12; 
+        const MAX_P2_ROUNDS = 15; 
+        const MAX_P3_ROUNDS = 20; 
         const LOCS_PER_ROUND = 4; 
         const CONTEXTS = ['twilight', 'rainy', 'snowy', 'sunny'];
         let activeImageIndices = [0, 0, 0, 0];
@@ -135,38 +135,32 @@
             if (surveyPool.length > 0) return; 
             if (typeof streetViews === 'undefined') return;
 
-            // --- Part 2 初始化保持不变 ---
-            if (typeof streetViews === 'undefined') return;
+            // --- Part 2 初始化 ---
             let allLocsP2 = [...streetViews];
             shuffle(allLocsP2);
             surveyPool = allLocsP2.slice(0, MAX_P2_ROUNDS * LOCS_PER_ROUND);
             
-            // --- Part 3 初始化 (针对 4 种天气重写) ---
+            // --- Part 3 初始化 ---
             if (typeof streetViewsP3 === 'undefined') return;
             let p3Locs = [...streetViewsP3]; 
             shuffle(p3Locs); 
 
-            surveyPoolP3 = []; // 清空旧池子
+            surveyPoolP3 = [];
 
-            // 1. Stage 1: 前 6 轮 (同一地点对比 4 种天气)
-            // 每一轮对应 1 个地点，展示该地点的 4 种环境
-            let stage1Locs = p3Locs.slice(0, 6);
+            // Stage 1: 前5轮，同一地点对比4种天气
+            let stage1Locs = p3Locs.slice(0, 5);
             stage1Locs.forEach(loc => {
-                // 这里的 CONTEXTS 已经是 ['night', 'rainy', 'snowy', 'sunny']
                 let round = CONTEXTS.map(ctx => ({
                     id: loc.id,
                     context: ctx,
-                    // 过滤出对应天气的图片
                     images: loc.images.filter(img => img.toLowerCase().includes(ctx)).slice(0, 4)
                 }));
-                surveyPoolP3.push(round); // 每一轮现在含有 4 个元素
+                surveyPoolP3.push(round);
             });
 
-            // 2. Stage 2: 后 6 轮 (从组合池中抽取，每轮 4 个不同地点不同天气)
+            // Stage 2: 后15轮，从全部90个地点随机抽取
             let comboPool = [];
-            let remainingLocs = p3Locs.slice(6); 
-            
-            remainingLocs.forEach(loc => {
+            [...p3Locs].forEach(loc => {  // 全部90个地点进候选池
                 CONTEXTS.forEach(ctx => {
                     comboPool.push({
                         id: loc.id,
@@ -176,14 +170,12 @@
                 });
             });
 
-            // 此时 comboPool 包含 (26个地点 * 4种天气) = 104 个组合
             shuffle(comboPool); 
             
-            // 我们需要 6 轮，每轮 4 个选项，总共抽取 24 个组合
-            let stage2Combos = comboPool.slice(0, 24);
+            // 15轮 * 4个 = 60个组合
+            let stage2Combos = comboPool.slice(0, 60);
 
-            for(let i = 0; i < 6; i++) {
-                // 每次切出 4 个组合作为一轮
+            for(let i = 0; i < 15; i++) {
                 let round = stage2Combos.slice(i * 4, (i + 1) * 4);
                 surveyPoolP3.push(round);
             }
@@ -541,7 +533,7 @@ function proceedFromConsent() {
                 <div class="space-y-12 pb-10 text-center">
                     <div class="text-[100px]">🏙️</div>
                     <h2 class="text-7xl font-black text-slate-900">Part 2: Street Preference</h2>
-                    <p class="text-3xl text-slate-500 italic">13 rounds in total</p>
+                    <p class="text-3xl text-slate-500 italic">15 rounds in total</p>
 
                     <div class="bg-blue-50 p-10 rounded-[50px] border-2 border-blue-100 text-left space-y-6">
                         <h3 class="text-4xl font-extrabold text-blue-900">How it works:</h3>
@@ -582,11 +574,11 @@ function proceedFromConsent() {
                     <h2 class="text-8xl font-black text-indigo-600 uppercase">Part 2 Complete!</h2>
                     <p class="text-4xl text-slate-500 font-medium px-12">Next, we will look at how weather and time affect your walking preference.</p>
                     <div class="bg-indigo-50 p-12 rounded-[60px] border-4 border-indigo-100 inline-block shadow-2xl">
-                        <p class="text-5xl font-bold text-indigo-800 mb-8">Ready for Part 3? (12 Rounds)</p>
+                        <p class="text-5xl font-bold text-indigo-800 mb-8">Ready for Part 3? (20 Rounds)</p>
                         <button onclick="currentIdx = 1000; updateUI();" class="px-24 py-12 bg-indigo-600 text-white rounded-full text-5xl font-black shadow-2xl hover:bg-indigo-700 transition-all active:scale-95">START PART 3</button>
                     </div>
 
-                <button onclick="currentIdx = 48; var lv = results.votes[results.votes.length - 1]; if (lv) currentRoundSelection = { best: lv.best, worst: lv.worst }; updateUI();" 
+                <button onclick="currentIdx = (MAX_P2_ROUNDS - 1) * LOCS_PER_ROUND; var lv = results.votes[results.votes.length - 1]; if (lv) currentRoundSelection = { best: lv.best, worst: lv.worst }; updateUI();" 
                     class="text-2xl text-slate-400 font-bold hover:text-blue-600 mt-6 block mx-auto">
                     ⬅️ Go Back to Part 2
                 </button>
@@ -868,7 +860,7 @@ function proceedFromConsent() {
             currentRoundSelection = { best: null, worst: null };
             activeImageIndices = [0, 0, 0, 0];
             currentIdx += 4;
-            if(currentIdx >= 52) currentIdx = 999;
+            if(currentIdx >= MAX_P2_ROUNDS * LOCS_PER_ROUND) currentIdx = 999;
             updateUI();
             window.scrollTo(0, 0);
         }
@@ -901,7 +893,11 @@ function proceedFromConsent() {
             if (currentIdx === 0) {
                 currentIdx = -3; 
             } else {
-                if (currentIdx === 999) currentIdx = 48; else currentIdx -= 4;
+                if (currentIdx === 999) {
+                    currentIdx = (MAX_P2_ROUNDS - 1) * LOCS_PER_ROUND;
+                } else {
+                    currentIdx -= LOCS_PER_ROUND;
+                }
                 // 恢复上一轮的选择数据
                 const lastVote = results.votes.pop(); 
                 if (lastVote) {
