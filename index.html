@@ -380,11 +380,11 @@ function checkConsent() {
     const btn = document.getElementById('consent-btn');
     if (allChecked) {
         btn.classList.remove('bg-slate-300', 'cursor-not-allowed');
-        btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700', 'shadow-2xl', 'scale-105');
+        btn.classList.add('bg-blue-500', 'hover:bg-blue-700', 'shadow-2xl', 'scale-105');
         btn.disabled = false;
     } else {
         btn.classList.add('bg-slate-300', 'cursor-not-allowed');
-        btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'shadow-2xl', 'scale-105');
+        btn.classList.remove('bg-blue-500', 'hover:bg-blue-700', 'shadow-2xl', 'scale-105');
         btn.disabled = true;
     }
 }
@@ -457,7 +457,7 @@ function proceedFromConsent() {
                         <div class="mb-8 space-y-2">
                             <p class="text-2xl text-slate-500"><span class="font-bold text-slate-700">Recreational:</span> Walking for leisure, exercise, or enjoyment (e.g. a stroll in the park).</p>
                             <p class="text-2xl text-slate-500"><span class="font-bold text-slate-700">Utilitarian:</span> Walking to get somewhere, such as shops, appointments, or public transport.</p>
-                            <p class="text-xl text-slate-400 font-bold">You may select both.</p>
+                            <p class="text-2xl text-red-700 font-extrabold">You may select both.</p>
                         </div>
                         <div class="grid grid-cols-2 gap-6">
                             ${['Recreational', 'Utilitarian'].map(v => `
@@ -558,7 +558,7 @@ function proceedFromConsent() {
                         class="w-full py-14 rounded-[40px] text-5xl font-black text-white bg-blue-500 hover:bg-blue-700 shadow-2xl transition-all active:scale-95">
                         START PART 2 ➔
                     </button>
-                    <button onclick="currentIdx = -15; updateUI(); window.scrollTo(0,0);" 
+                    <button onclick="currentIdx = -1; updateUI(); window.scrollTo(0,0);" 
                         class="text-2xl text-slate-400 font-bold hover:text-blue-600">
                         ⬅️ Go Back to Part 1
                     </button>
@@ -571,11 +571,11 @@ function proceedFromConsent() {
             app.innerHTML = `
                 <div class="text-center py-24 space-y-16">
                     <div class="text-[180px]">🌆</div>
-                    <h2 class="text-8xl font-black text-indigo-600 uppercase">Part 2 Complete!</h2>
+                    <h2 class="text-8xl font-black text-blue-600 uppercase">Part 2 Complete!</h2>
                     <p class="text-4xl text-slate-500 font-medium px-12">Next, we will look at how weather and time affect your walking preference.</p>
-                    <div class="bg-indigo-50 p-12 rounded-[60px] border-4 border-indigo-100 inline-block shadow-2xl">
-                        <p class="text-5xl font-bold text-indigo-800 mb-8">Ready for Part 3? (20 Rounds)</p>
-                        <button onclick="currentIdx = 1000; updateUI();" class="px-24 py-12 bg-indigo-600 text-white rounded-full text-5xl font-black shadow-2xl hover:bg-indigo-700 transition-all active:scale-95">START PART 3</button>
+                    <div class="bg-blue-50 p-12 rounded-[60px] border-4 border-blue-100 inline-block shadow-2xl">
+                        <p class="text-5xl font-bold text-blue-800 mb-8">Ready for Part 3? (20 Rounds)</p>
+                        <button onclick="currentIdx = 1000; updateUI();" class="px-24 py-12 bg-blue-500 text-white rounded-full text-5xl font-black shadow-2xl hover:bg-blue-700 transition-all active:scale-95">START PART 3</button>
                     </div>
 
                 <button onclick="currentIdx = (MAX_P2_ROUNDS - 1) * LOCS_PER_ROUND; var lv = results.votes[results.votes.length - 1]; if (lv) currentRoundSelection = { best: lv.best, worst: lv.worst }; updateUI();" 
@@ -612,7 +612,7 @@ function proceedFromConsent() {
             app.innerHTML = `
                 <div class="vote-container">
                     <div class="text-center bg-slate-50 py-2 rounded-[30px] border-2 border-slate-100 flex-shrink-0">
-                        <p class="text-3xl text-slate-700 font-bold">Select <span class="text-green-600">BEST</span> and <span class="text-red-600">WORST</span> locations of walking <span class="text-slate-400 text-xl block mt-1">(Double click to deselect)</span></p>
+                        <p class="text-3xl text-slate-700 font-bold">Select <span class="text-green-600">BEST</span> and <span class="text-red-600">WORST</span> locations of walking <span class="text-slate-400 text-xl block mt-1">(Double click to deselect · Use ❮ ❯ to browse different angles)</span></p>
                     </div>
 
                     <div class="vote-grid">
@@ -666,7 +666,7 @@ function proceedFromConsent() {
             app.innerHTML = `
                 <div class="vote-container">
                     <div class="text-center bg-indigo-50 py-2 rounded-[30px] border-2 border-indigo-100 flex-shrink-0">
-                        <p class="text-3xl text-slate-700 font-bold px-10">Select <span class="text-green-600">BEST</span> and <span class="text-red-600">WORST</span> Environment</p>
+                        <p class="text-3xl text-slate-700 font-bold px-10">Select <span class="text-green-600">BEST</span> and <span class="text-red-600">WORST</span> Environment <span class="text-slate-400 text-xl block mt-1">(Double click to deselect · Use ❮ ❯ to browse different angles)</span></p>
                     </div>
 
                     <div class="vote-grid">
@@ -704,7 +704,7 @@ function proceedFromConsent() {
                     </div>
 
                     <div class="flex-shrink-0 flex flex-col items-center gap-2">
-                        <button id="next-btn" onclick="saveRoundP3()" ${isDone ? '' : 'disabled'} class="w-full py-5 rounded-[24px] text-3xl font-black text-white transition-all ${isDone ? 'bg-indigo-600 hover:bg-indigo-700 shadow-xl' : 'bg-slate-300 cursor-not-allowed'}">CONFIRM & NEXT ➔</button>
+                        <button id="next-btn" onclick="saveRoundP3()" ${isDone ? '' : 'disabled'} class="w-full py-5 rounded-[24px] text-3xl font-black text-white transition-all ${isDone ? 'bg-blue-500 hover:bg-blue-700 shadow-xl' : 'bg-slate-300 cursor-not-allowed'}">CONFIRM & NEXT ➔</button>
                         <div class="flex justify-center items-center gap-12 w-full">
                             <button onclick="goBackP3()" class="text-2xl text-slate-400 font-bold hover:text-blue-600">⬅️ Go Back</button>
                             <button onclick="resetRound()" class="text-2xl text-slate-400 font-bold hover:text-orange-500">🔄 Reset</button>
